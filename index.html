@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Candlestick Screener</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;  /* light gray */
+            color: #333;  /* dark gray */
+        }
+
+        h1 {
+            text-shadow: 1px 1px 1px #999;  /* shadow for depth */
+        }
+
+        form, table {
+            background-color: #fff;  /* white */
+            border-radius: 5px;  /* rounded corners */
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);  /* shadow for depth */
+            padding: 20px;
+        }
+
+        input[type="submit"] {
+            transition: background-color 0.5s;  /* transition for hover effect */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #00ffae;  /* slightly darker blue */
+        }
+
+        #progressBar {
+            height: 20px;
+            background-color: rgb(174, 58, 45);
+            border-radius: 10px;  /* rounded corners */
+            transition: width 0.5s;  /* transition for smoother progress bar */
+        }
+        .bullish {
+            background: lightgreen;
+            color: black;
+        }
+        .bearish {
+            background: lightcoral;
+            color: black;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 class="mb-4">Candlestick Screener</h1>
+    <form class="mb-4">
+        <select class="custom-select" name="pattern">
+            <option value="">-- Select a Pattern --</option>
+            <!-- pattern options -->
+            {% for pattern in patterns %}
+            <option value="{{ pattern }}" {% if pattern == current_pattern %}selected="selected"{% endif %}>{{ patterns[pattern] }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" class="btn btn-primary mt-2" value="Scan"/>
+    </form>
+    <form action="/snapshot" method="GET" class="mb-4">
+        <input type="submit" class="btn btn-secondary" value="Take Snapshot"/>
+    </form>
+    <div id="progressBar"></div> <!-- Progress bar here -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Currency Name</th>
+                <th>Signal</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- data rows -->
+            {% for cryp in crypto %}
+                {% if crypto[cryp][current_pattern] %}
+                <tr>
+                    <td>{{ cryp }}</td>
+                    <td>{{ crypto[cryp]['currency'] }}</td>
+                    <td class="{{ crypto[cryp][current_pattern] }}">{{ crypto[cryp][current_pattern] }}</td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <script>
+    function updateProgress() {
+        fetch('/progress')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('progressBar').style.width = data.progress + '%';
+            });
+    }
+
+    // Update the progress every second
+    setInterval(updateProgress, 1000);
+    </script>
+</body>
+</html>
